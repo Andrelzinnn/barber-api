@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 
+/drizzle
 # testing
 /coverage
 
@@ -41,3 +42,4 @@ yarn-error.log*
 package-lock.json
 **/*.bun
 /src/generated/prisma
+*.sqlite
