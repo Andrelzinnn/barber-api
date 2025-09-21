@@ -12,6 +12,7 @@
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
     "elysia": "latest",
+    "openapi": "^1.0.1",
     "zod": "^4.1.11"
   },
   "devDependencies": {

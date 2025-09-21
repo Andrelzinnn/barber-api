@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { clientTable } from "@/db/schema";
-import { newClient } from "@/types/Client";
+import { NewClient, updateClientSchema, UpdateClient } from "@/types/Client";
 import { randomUUIDv7 } from "bun";
 
 export async function getAllClients() {
@@ -16,11 +16,30 @@ export async function getClientByEmail(email: string) {
   return result;
 }
 
-export async function createClient(data: newClient) {
+export async function createClient(data: NewClient) {
   const clientWithId = {
     ...data,
     id: randomUUIDv7(), // ← Gera UUID automaticamente
   };
 
   return db.insert(clientTable).values(clientWithId).returning();
+}
+
+export async function updateClient(id: string, data: UpdateClient) {
+  const updateClient = await db
+    .update(clientTable)
+    .set(data)
+    .where(eq(clientTable.id, id))
+    .returning();
+  return updateClient;
+}
+
+export async function deleteClient(id: string) {
+  const client = await db
+    .delete(clientTable)
+    .where(eq(clientTable.id, id))
+    .limit(1)
+    .returning();
+
+  return client;
 }

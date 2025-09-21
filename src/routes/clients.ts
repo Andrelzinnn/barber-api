@@ -4,8 +4,9 @@ import {
   createClient,
   getAllClients,
   getClientByEmail,
+  updateClient,
 } from "@/services/client";
-import { newClient } from "@/types/Client";
+import { NewClient, updateClientSchema, UpdateClient } from "@/types/Client";
 
 const createClientSchema = z.object({
   name: z.string().min(1),
@@ -28,11 +29,19 @@ export const clientRoutes = new Elysia({ prefix: "/clients" })
     };
   })
   .post("/", async ({ body, set }) => {
-    const validateData = createClientSchema.parse(body) as newClient;
+    const validateData = createClientSchema.parse(body) as NewClient;
     const client = await createClient(validateData);
     set.status = 201;
     return {
       success: true,
       data: client,
     };
-  });
+  })
+
+  .put("/:id", async ({ params, body, set }) => {
+    const validatedData = updateClientSchema.parse(body);
+    const client = await updateClient(params.id, validatedData);
+    return client;
+  })
+
+  .delete("/:id", async ({ params, set }) => {});
