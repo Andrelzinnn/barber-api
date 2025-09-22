@@ -19,7 +19,7 @@ export async function getClientByEmail(email: string) {
 export async function createClient(data: NewClient) {
   const clientWithId = {
     ...data,
-    id: randomUUIDv7(), // ← Gera UUID automaticamente
+    id: randomUUIDv7(),
   };
 
   return db.insert(clientTable).values(clientWithId).returning();

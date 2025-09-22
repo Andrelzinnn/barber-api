@@ -1,6 +1,7 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 export * from "./auth-schema";
+import { relations } from "drizzle-orm";
 
 export const clientTable = sqliteTable("clients", {
   id: text("id").primaryKey(),
@@ -32,18 +33,17 @@ export const appointmentTable = sqliteTable("appointments", {
 });
 
 // Relacionamentos (opcional para type safety)
-export const appointmentRelations = {
-  client: {
-    relation: "one",
+
+export const appointmentRelations = relations(appointmentTable, ({ one }) => ({
+  client: one(clientTable, {
     fields: [appointmentTable.client_id],
     references: [clientTable.id],
-  },
-  service: {
-    relation: "one",
+  }),
+  service: one(serviceTable, {
     fields: [appointmentTable.service_id],
     references: [serviceTable.id],
-  },
-};
+  }),
+}));
 
 // Tipos TypeScript derivados
 export type Client = typeof clientTable.$inferSelect;
