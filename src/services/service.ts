@@ -29,7 +29,6 @@ export async function updateServiceById(id: string, data: UpdateService) {
     .update(serviceTable)
     .set(data)
     .where(eq(serviceTable.id, id))
-    .limit(1)
     .returning();
 
   return service;

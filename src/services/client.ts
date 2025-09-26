@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { clientTable } from "@/db/schema";
-import { NewClient, updateClientSchema, UpdateClient } from "@/types/Client";
+import { NewClient, UpdateClient } from "@/types/Client";
 import { randomUUIDv7 } from "bun";
 
 export async function getAllClients() {
@@ -9,9 +9,9 @@ export async function getAllClients() {
   return result;
 }
 
-export async function getClientByEmail(email: string) {
+export async function getClientById(id: string) {
   const result = await db.query.clientTable.findFirst({
-    where: eq(clientTable.email, email),
+    where: eq(clientTable.email, id),
   });
   return result;
 }

@@ -1,12 +1,40 @@
 import { Elysia } from "elysia";
+import { cors } from "@elysiajs/cors";
 import { clientRoutes } from "./routes/clients";
 import { servicesRoutes } from "./routes/services";
-const app = new Elysia({ prefix: "/api" });
+import { appointmentRoutes } from "./routes/appointments";
+import { auth } from "@/auth/auth";
+import { openapi } from "@elysiajs/openapi";
+import { OpenAPI } from "@/plugins/better-auth";
 
-app.use([clientRoutes, servicesRoutes]);
+const app = new Elysia();
 
-app.listen(3000);
+app.use([
+  clientRoutes,
+  servicesRoutes,
+  appointmentRoutes,
+  openapi({
+    documentation: {
+      components: await OpenAPI.components,
+      paths: await OpenAPI.getPaths(),
+    },
+  }),
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+]);
+
+app.mount(auth.handler);
+app.listen({
+  port: 3000,
+  hostname: "0.0.0.0",
+  tls: {
+    key: Bun.file("./localhost+3-key.pem"),
+    cert: Bun.file("./localhost+3.pem"),
+  },
+});
 
 console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}/api`
+  `🦊 Elysia is running at https://${app.server?.hostname}:${app.server?.port}`
 );
