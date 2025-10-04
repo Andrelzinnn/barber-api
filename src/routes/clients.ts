@@ -5,6 +5,7 @@ import {
   deleteClient,
   getAllClients,
   getClientById,
+  getClientByEmail,
   updateClient,
 } from "@/services/client";
 import { NewClient, updateClientSchema, UpdateClient } from "@/types/Client";
@@ -60,6 +61,34 @@ export const clientRoutes = new Elysia({ prefix: "/api/clients" })
       detail: {
         summary: "search using ID",
         tags: ["users"],
+      },
+    }
+  )
+  .get(
+    "/email/:email",
+    async ({ params, set }) => {
+      try {
+        const email = params.email;
+        const client = await getClientByEmail(email);
+        if (!client) {
+          set.status = 404;
+          return {
+            success: false,
+            message: "Client not Found",
+          };
+        }
+        return {
+          success: true,
+          data: client,
+        };
+      } catch (error) {
+        return handleApiError(error, set);
+      }
+    },
+    {
+      detail: {
+        summary: "Search client using Email",
+        tags: ["users", "email"],
       },
     }
   )

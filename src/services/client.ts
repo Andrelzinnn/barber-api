@@ -9,6 +9,13 @@ export async function getAllClients() {
   return result;
 }
 
+export async function getClientByEmail(email: string) {
+  const result = await db.query.clientTable.findFirst({
+    where: eq(clientTable.email, email),
+  });
+  return result;
+}
+
 export async function getClientById(id: string) {
   const result = await db.query.clientTable.findFirst({
     where: eq(clientTable.email, id),

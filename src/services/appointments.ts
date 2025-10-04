@@ -51,6 +51,16 @@ export async function getAppointmentByTime(time: string) {
   });
 }
 
+export async function getAppointmentByClientId(id: string) {
+  return await db.query.appointmentTable.findMany({
+    where: eq(appointmentTable.client_id, id),
+    with: {
+      client: true,
+      service: true,
+    },
+  });
+}
+
 export async function createAppointment(data: NewAppointment) {
   const appointmentWithId = {
     ...data,
@@ -78,4 +88,16 @@ export async function deleteAppointment(id: string) {
     .delete(appointmentTable)
     .where(eq(appointmentTable.id, id))
     .returning();
+}
+
+export async function updateAppointmentStatus(
+  id: string,
+  data: UpdateAppointment
+) {
+  const appointment = await db
+    .update(appointmentTable)
+    .set(data)
+    .where(eq(appointmentTable.id, id))
+    .returning();
+  return appointment;
 }

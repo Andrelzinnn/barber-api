@@ -20,7 +20,7 @@ app.use([
     },
   }),
   cors({
-    origin: true,
+    origin: ["https://localhost:5173", "https://192.168.100.9:5173"],
     credentials: true,
   }),
 ]);
