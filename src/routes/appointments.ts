@@ -3,14 +3,17 @@ import {
   createAppointment,
   deleteAppointment,
   getAllAppointments,
-  getAppointmentByClientId,
+  getAppointmentByClientEmail,
   getAppointmentById,
+  getAppointmentsByDate,
+  updateAppointmentById,
   updateAppointmentStatus,
 } from "@/services/appointments";
 import {
+  appointmentIdSchema,
   createAppointmentSchema,
-  NewAppointment,
   updateAppointmentSchema,
+  appointmentStatusSchema,
 } from "@/types/Appointments";
 import { handleApiError } from "@/types/HandleApiError";
 
@@ -41,9 +44,9 @@ export const appointmentRoutes = new Elysia({ prefix: "/api/appointments" })
     }
   })
 
-  .get("/client/:id", async ({ params, set }) => {
+  .get("/client/:email", async ({ params, set }) => {
     try {
-      const appointment = await getAppointmentByClientId(params.id);
+      const appointment = await getAppointmentByClientEmail(params.email);
       if (!appointment) {
         set.status = 400;
         return {
@@ -60,12 +63,23 @@ export const appointmentRoutes = new Elysia({ prefix: "/api/appointments" })
     }
   })
 
+  .get("/date/:date", async ({ params, set }) => {
+    try {
+      const date = params.date;
+      const appointment = await getAppointmentsByDate(date);
+      return {
+        success: true,
+        data: appointment,
+      };
+    } catch (error) {
+      return handleApiError(error, set);
+    }
+  })
+
   .post("/", async ({ body, set }) => {
     try {
       console.log(body);
-      const validatedData = createAppointmentSchema.parse(
-        body
-      ) as NewAppointment;
+      const validatedData = createAppointmentSchema.parse(body);
       const appointment = await createAppointment(validatedData);
       set.status = 201;
       return {
@@ -81,7 +95,37 @@ export const appointmentRoutes = new Elysia({ prefix: "/api/appointments" })
     try {
       const validateData = updateAppointmentSchema.parse(body);
       const id = params.id;
-      const appointment = await updateAppointmentStatus(id, validateData);
+      const appointment = await updateAppointmentById(id, validateData);
+      set.status = 201;
+      return {
+        success: true,
+        data: appointment,
+      };
+    } catch (error) {
+      return handleApiError(error, set);
+    }
+  })
+
+  .get("/:id/cancel", async ({ params, set }) => {
+    try {
+      const id = params.id;
+      const status = appointmentStatusSchema.parse(2);
+      const appointment = await updateAppointmentStatus(id, status);
+      set.status = 201;
+      return {
+        success: true,
+        data: appointment,
+      };
+    } catch (error) {
+      return handleApiError(error, set);
+    }
+  })
+
+  .get("/:id/complete", async ({ params, set }) => {
+    try {
+      const id = appointmentIdSchema.parse(params.id);
+      const status = appointmentStatusSchema.parse(1);
+      const appointment = await updateAppointmentStatus(id, status);
       set.status = 201;
       return {
         success: true,

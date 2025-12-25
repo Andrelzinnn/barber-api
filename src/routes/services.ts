@@ -3,6 +3,7 @@ import {
   validateServiceSchema,
   NewService,
   updateServiceSchema,
+  serviceIdSchema,
 } from "@/types/service";
 import {
   getAllServices,
@@ -10,6 +11,7 @@ import {
   createService,
   updateServiceById,
   deleteService,
+  updateActiveServiceStats,
 } from "@/services/service";
 import { handleApiError } from "@/types/HandleApiError";
 
@@ -22,6 +24,7 @@ export const servicesRoutes = new Elysia({ prefix: "/api/services" })
       return handleApiError(error, set);
     }
   })
+
   .get("/:id", async ({ params, set }) => {
     try {
       const service = await getServiceById(params.id);
@@ -34,6 +37,7 @@ export const servicesRoutes = new Elysia({ prefix: "/api/services" })
       return handleApiError(error, set);
     }
   })
+
   .post("/", async ({ body, set }) => {
     try {
       const validatedData = validateServiceSchema.parse(body) as NewService;
@@ -44,6 +48,7 @@ export const servicesRoutes = new Elysia({ prefix: "/api/services" })
       return handleApiError(error, set);
     }
   })
+
   .put("/:id", async ({ params, body, set }) => {
     try {
       const validatedData = updateServiceSchema.parse(body);
@@ -58,6 +63,19 @@ export const servicesRoutes = new Elysia({ prefix: "/api/services" })
       return handleApiError(error, set);
     }
   })
+
+  .get("/active-stats/:id", async ({ params, set }) => {
+    console.log("Updating active stats for service ID:", params.id);
+    try {
+      const id = serviceIdSchema.parse(params.id);
+      const resp = await updateActiveServiceStats(id);
+      set.status = 200;
+      return { success: true, message: resp };
+    } catch (error) {
+      return handleApiError(error, set);
+    }
+  })
+
   .delete("/:id", async ({ params, set }) => {
     try {
       const deletedService = await deleteService(params.id);

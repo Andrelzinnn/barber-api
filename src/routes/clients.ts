@@ -8,9 +8,8 @@ import {
   getClientByEmail,
   updateClient,
 } from "@/services/client";
-import { NewClient, updateClientSchema, UpdateClient } from "@/types/Client";
+import { NewClient, updateClientSchema } from "@/types/Client";
 import { handleApiError } from "@/types/HandleApiError";
-import { openapi } from "@elysiajs/openapi";
 
 const createClientSchema = z.object({
   name: z.string().min(1),

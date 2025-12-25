@@ -18,6 +18,7 @@ export const auth = betterAuth({
     "https://localhost:5173",
     "https://192.168.100.9:3000",
     "https://192.168.100.9:5173",
+    "https://localhost:8080",
   ],
   session: {
     expiresIn: 60 * 60 * 24 * 7,
@@ -33,6 +34,7 @@ export const auth = betterAuth({
       secure: true,
       sameSite: "none",
       path: "/",
+      attributes: {},
     },
   },
   // Força o uso de cookies
