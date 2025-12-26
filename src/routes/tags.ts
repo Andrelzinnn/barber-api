@@ -6,71 +6,58 @@ import {
   updateTagById,
   deleteTagById,
 } from "@/services/tags";
-import {
-  NewTag,
-  validateTagSchema,
-  updateTagSchema,
-  tagIdSchema,
-} from "@/types/Tags";
-import { handleApiError } from "@/types/HandleApiError";
+import { validateTagSchema, updateTagSchema, tagIdSchema } from "@/types/Tags";
+import { betterauth } from "@/auth/auth";
 
 export const tagRoutes = new Elysia({ prefix: "/api/tags" })
-  .get("/", async ({ set }) => {
-    try {
-      const tags = await getAllTags();
-      return { success: true, data: tags };
-    } catch (error) {
-      return handleApiError(error, set);
-    }
+  .use(betterauth)
+
+  //Rotas Públicas
+  .get("/", async () => {
+    const tags = await getAllTags();
+    return { success: true, data: tags };
   })
+
   .get("/:id", async ({ params, set }) => {
-    try {
-      const id = tagIdSchema.parse(params.id);
-      const tag = await getTagById(id);
-      if (!tag) {
-        set.status = 404;
-        return { success: false, message: "Tag not found" };
-      }
-      return { success: true, data: tag };
-    } catch (error) {
-      return handleApiError(error, set);
+    const id = tagIdSchema.parse(params.id);
+    const tag = await getTagById(id);
+    if (!tag) {
+      set.status = 404;
+      return { success: false, message: "Tag not found" };
     }
+    return { success: true, data: tag };
   })
-  .post("/", async ({ body, set }) => {
-    try {
-      const validatedData = validateTagSchema.parse(body);
-      const tag = await createTag(validatedData);
-      set.status = 201;
-      return { success: true, data: tag };
-    } catch (error) {
-      return handleApiError(error, set);
-    }
-  })
-  .put("/:id", async ({ params, body, set }) => {
-    try {
-      const validatedData = updateTagSchema.parse(body);
-      const tag = await updateTagById(params.id, validatedData);
-      if (!tag || tag.length === 0) {
-        set.status = 404;
-        return { success: false, message: "Tag not found" };
-      }
-      set.status = 200;
-      return { success: true, data: tag[0] };
-    } catch (error) {
-      return handleApiError(error, set);
-    }
-  })
-  .delete("/:id", async ({ params, set }) => {
-    try {
-      const id = tagIdSchema.parse(params.id);
-      const tag = await deleteTagById(id);
-      if (!tag || tag.length === 0) {
-        set.status = 404;
-        return { success: false, message: "Tag not found" };
-      }
-      set.status = 200;
-      return { success: true, data: tag[0] };
-    } catch (error) {
-      return handleApiError(error, set);
-    }
-  });
+
+  //Rotas Protegidas
+  .guard(
+    {
+      beforeHandle({ user }) {
+        if (!user) throw new Error("Unauthorized");
+      },
+    },
+    (app) =>
+      app
+        .post("/", async ({ body }) => {
+          const validatedData = validateTagSchema.parse(body);
+          const tag = await createTag(validatedData);
+          return { success: true, data: tag };
+        })
+        .put("/:id", async ({ params, body, set }) => {
+          const validatedData = updateTagSchema.parse(body);
+          const tag = await updateTagById(params.id, validatedData);
+          if (!tag || tag.length === 0) {
+            set.status = 404;
+            return { success: false, message: "Tag not found" };
+          }
+          return { success: true, data: tag };
+        })
+        .delete("/:id", async ({ params, set }) => {
+          const id = tagIdSchema.parse(params.id);
+          const tag = await deleteTagById(id);
+          if (!tag || tag.length === 0) {
+            set.status = 404;
+            return { success: false, message: "Tag not found" };
+          }
+          return { success: true, data: tag[0] };
+        })
+  );

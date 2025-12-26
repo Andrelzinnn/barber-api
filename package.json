@@ -2,7 +2,7 @@
   "name": "barber-api",
   "version": "1.0.50",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
@@ -24,7 +24,8 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "^1.2.22",
     "bun-types": "latest",
-    "drizzle-kit": "^0.31.4"
+    "drizzle-kit": "^0.31.4",
+    "vitest": "^4.0.16"
   },
   "module": "src/index.js"
 }

@@ -2,7 +2,11 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { serviceTable } from "@/db/schema";
 import { randomUUIDv7 } from "bun";
-import { NewService, ServiceId, UpdateService } from "@/types/service";
+import {
+  CreateServiceInput,
+  ServiceId,
+  UpdateServiceInput,
+} from "@/types/service";
 
 export async function getAllServices() {
   const services = await db.query.serviceTable.findMany({});
@@ -16,7 +20,7 @@ export async function getServiceById(id: ServiceId) {
   return service;
 }
 
-export async function createService(data: NewService) {
+export async function createService(data: CreateServiceInput) {
   const serviceWithId = {
     ...data,
     id: randomUUIDv7(),
@@ -25,7 +29,10 @@ export async function createService(data: NewService) {
   return db.insert(serviceTable).values(serviceWithId).returning();
 }
 
-export async function updateServiceById(id: ServiceId, data: UpdateService) {
+export async function updateServiceById(
+  id: ServiceId,
+  data: UpdateServiceInput
+) {
   const service = await db
     .update(serviceTable)
     .set(data)

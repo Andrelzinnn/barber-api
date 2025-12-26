@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import {
-  validateServiceSchema,
+  createServiceSchema,
   NewService,
   updateServiceSchema,
   serviceIdSchema,
@@ -13,79 +13,66 @@ import {
   deleteService,
   updateActiveServiceStats,
 } from "@/services/service";
-import { handleApiError } from "@/types/HandleApiError";
+
+import { betterauth } from "@/auth/auth";
 
 export const servicesRoutes = new Elysia({ prefix: "/api/services" })
-  .get("/", async ({ set }) => {
-    try {
-      const services = await getAllServices();
-      return { success: true, data: services };
-    } catch (error) {
-      return handleApiError(error, set);
-    }
+  .use(betterauth)
+
+  //Rotas Públicas
+  .get("/", async () => {
+    const services = await getAllServices();
+    return { success: true, data: services };
   })
 
   .get("/:id", async ({ params, set }) => {
-    try {
-      const service = await getServiceById(params.id);
-      if (!service) {
-        set.status = 404;
-        return { success: false, message: "Service not found" };
-      }
-      return { success: true, data: service };
-    } catch (error) {
-      return handleApiError(error, set);
+    const service = await getServiceById(params.id);
+    if (!service) {
+      set.status = 404;
+      return { success: false, message: "Service not found" };
     }
+    return { success: true, data: service };
   })
 
-  .post("/", async ({ body, set }) => {
-    try {
-      const validatedData = validateServiceSchema.parse(body) as NewService;
-      const service = await createService(validatedData);
-      set.status = 201;
-      return { success: true, data: service };
-    } catch (error) {
-      return handleApiError(error, set);
-    }
-  })
+  //Rotas Protegidas
+  .guard(
+    {
+      beforeHandle({ user }) {
+        if (!user) throw new Error("Unauthorized");
+      },
+    },
+    (app) =>
+      app
 
-  .put("/:id", async ({ params, body, set }) => {
-    try {
-      const validatedData = updateServiceSchema.parse(body);
-      const service = await updateServiceById(params.id, validatedData);
-      if (!service || service.length === 0) {
-        set.status = 404;
-        return { success: false, message: "Service not found" };
-      }
-      set.status = 200;
-      return { success: true, data: service[0] };
-    } catch (error) {
-      return handleApiError(error, set);
-    }
-  })
+        .post("/", async ({ body }) => {
+          const validatedData = createServiceSchema.parse(body);
+          const service = await createService(validatedData);
+          return { success: true, data: service };
+        })
 
-  .get("/active-stats/:id", async ({ params, set }) => {
-    console.log("Updating active stats for service ID:", params.id);
-    try {
-      const id = serviceIdSchema.parse(params.id);
-      const resp = await updateActiveServiceStats(id);
-      set.status = 200;
-      return { success: true, message: resp };
-    } catch (error) {
-      return handleApiError(error, set);
-    }
-  })
+        .put("/:id", async ({ params, body, set }) => {
+          const validatedData = updateServiceSchema.parse(body);
+          const service = await updateServiceById(params.id, validatedData);
+          if (!service || service.length === 0) {
+            set.status = 404;
+            return { success: false, message: "Service not found" };
+          }
+          return { success: true, data: service };
+        })
 
-  .delete("/:id", async ({ params, set }) => {
-    try {
-      const deletedService = await deleteService(params.id);
-      if (!deletedService || deletedService.length === 0) {
-        set.status = 404;
-        return { success: false, message: "Service not found" };
-      }
-      set.status = 200;
-      return { success: true, data: deletedService[0] };
-    } catch (error) {
-      return handleApiError(error, set);
-    }
-  });
+        .get("/active-stats/:id", async ({ params }) => {
+          const id = serviceIdSchema.parse(params.id);
+          const resp = await updateActiveServiceStats(id);
+          return { success: true, message: resp };
+        })
+
+        .delete("/:id", async ({ params, set }) => {
+          const id = serviceIdSchema.parse(params.id);
+          const deletedService = await deleteService(id);
+          if (!deletedService || deletedService.length === 0) {
+            set.status = 404;
+            return { success: false, message: "Service not found" };
+          }
+          return { success: true, data: deletedService };
+        })
+  );

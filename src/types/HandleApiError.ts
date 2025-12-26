@@ -3,6 +3,14 @@ import { Context } from "elysia";
 export function handleApiError(error: unknown, set: Context["set"]) {
   console.error("API Error:", error);
 
+  if (error instanceof Error && error.message === "Unauthorized") {
+    set.status = 401;
+    return {
+      success: false,
+      message: "Unauthorized - Authentication required",
+    };
+  }
+
   if (
     error &&
     typeof error === "object" &&
@@ -22,7 +30,6 @@ export function handleApiError(error: unknown, set: Context["set"]) {
       set.status = 400;
       return { success: false, message: "Invalid client or service ID" };
     }
-
     if (error.message.includes("UNIQUE constraint")) {
       set.status = 409;
       return { success: false, message: "Resource already exists" };

@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export type NewService = typeof serviceTable.$inferInsert;
 
-export const validateServiceSchema = z.object({
+export const createServiceSchema = z.object({
   name: z.string().min(1),
   price: z.number().positive(),
   duration: z.number().int().positive(),
@@ -19,5 +19,6 @@ export const updateServiceSchema = z.object({
 
 export const serviceIdSchema = z.uuidv7();
 
-export type UpdateService = z.infer<typeof updateServiceSchema>;
+export type CreateServiceInput = z.infer<typeof createServiceSchema>;
+export type UpdateServiceInput = z.infer<typeof updateServiceSchema>;
 export type ServiceId = z.infer<typeof serviceIdSchema>;

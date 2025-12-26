@@ -1,7 +1,12 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { clientTable } from "@/db/schema";
-import { NewClient, UpdateClient } from "@/types/Client";
+import {
+  ClientEmail,
+  ClientId,
+  CreateClientInput,
+  UpdateClientInput,
+} from "@/types/Client";
 import { randomUUIDv7 } from "bun";
 
 export async function getAllClients() {
@@ -9,21 +14,21 @@ export async function getAllClients() {
   return result;
 }
 
-export async function getClientByEmail(email: string) {
+export async function getClientByEmail(email: ClientEmail) {
   const result = await db.query.clientTable.findFirst({
     where: eq(clientTable.email, email),
   });
   return result;
 }
 
-export async function getClientById(id: string) {
+export async function getClientById(id: ClientId) {
   const result = await db.query.clientTable.findFirst({
     where: eq(clientTable.email, id),
   });
   return result;
 }
 
-export async function createClient(data: NewClient) {
+export async function createClient(data: CreateClientInput) {
   const clientWithId = {
     ...data,
     id: randomUUIDv7(),
@@ -32,7 +37,7 @@ export async function createClient(data: NewClient) {
   return db.insert(clientTable).values(clientWithId).returning();
 }
 
-export async function updateClient(id: string, data: UpdateClient) {
+export async function updateClient(id: ClientId, data: UpdateClientInput) {
   const updateClient = await db
     .update(clientTable)
     .set(data)
@@ -41,7 +46,7 @@ export async function updateClient(id: string, data: UpdateClient) {
   return updateClient;
 }
 
-export async function deleteClient(id: string) {
+export async function deleteClient(id: ClientId) {
   const client = await db
     .delete(clientTable)
     .where(eq(clientTable.id, id))

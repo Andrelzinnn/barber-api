@@ -1,17 +1,14 @@
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
-import { clientRoutes } from "@/routes/clients";
-import { servicesRoutes } from "@/routes/services";
-import { appointmentRoutes } from "@/routes/appointments";
-import { tagsServicesRelationsRoutes } from "@/routes/tagsServicesRelations";
-import { paymentRoutes } from "@/routes/payments";
-import { auth } from "@/auth/auth";
 import { openapi } from "@elysiajs/openapi";
 import { OpenAPI } from "@/plugins/better-auth";
-import { barbershopRoutes } from "@/routes/barbeshop";
-import { tagRoutes } from "./routes/tags";
+import { protectedRoutes, partialProtectedRoutes } from "@/routes";
+import { handleApiError } from "@/types/HandleApiError";
 
 const app = new Elysia();
+app.onError(({ error, set }) => {
+  return handleApiError(error, set);
+});
 
 app.use([
   cors({
@@ -33,13 +30,8 @@ app.use([
     ],
     credentials: true,
   }),
-  clientRoutes,
-  servicesRoutes,
-  appointmentRoutes,
-  tagsServicesRelationsRoutes,
-  tagRoutes,
-  barbershopRoutes,
-  paymentRoutes,
+  protectedRoutes,
+  partialProtectedRoutes,
   openapi({
     documentation: {
       components: await OpenAPI.components,
@@ -48,7 +40,6 @@ app.use([
   }),
 ]);
 
-app.mount(auth.handler);
 app.listen({
   port: 3000,
   hostname: "0.0.0.0",
